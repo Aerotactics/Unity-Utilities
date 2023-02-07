@@ -208,5 +208,12 @@ namespace UnityEngine
             left.rotation = right.rotation;
             left.localScale = right.localScale;
         }
+
+        public static void Zero(this Transform transform)
+        {
+            transform.position = Vector3.zero;
+            transform.rotation = Quaternion.identity;
+            transform.localScale = Vector3.zero;
+        }
     }
 }
