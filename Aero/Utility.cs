@@ -2,9 +2,13 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Encoding = System.Text.Encoding;
+
+using GameObject = UnityEngine.GameObject;
+using Coroutine = UnityEngine.Coroutine;
 
 namespace Aero
 {
@@ -14,6 +18,10 @@ namespace Aero
         private const int kSecondsInAnHour = 3600;
         private const int kSecondsInAnMinute = 60;
         private const int kUILayer = 5;
+
+        // Set this to any component instance
+        private static MonoBehaviour s_monoBehaviour = UIManager.instance; 
+        private static Dictionary<GameObject, Coroutine> s_panelRoutines = new Dictionary<GameObject, Coroutine>();
 
         public enum TimeScale
         {
@@ -39,7 +47,27 @@ namespace Aero
             else if (timeScale == TimeScale.kMinutes)
                 return minutes.ToString("D2") + ":" + seconds.ToString("00.00");
 
-            return String.Empty;
+            return String.Empty; 
+        }
+
+        public static void Refresh(GameObject gameObject)
+        {
+            Coroutine coroutine = null;
+            if (s_panelRoutines.TryGetValue(gameObject, out coroutine) && coroutine != null)
+                s_monoBehaviour.StopCoroutine(coroutine);
+
+            s_panelRoutines[gameObject] = s_monoBehaviour.StartCoroutine(RefreshRoutine(gameObject));
+        }
+
+        private static IEnumerator RefreshRoutine(GameObject gameObject)
+        {
+            gameObject.SetActive(true);
+            yield return null;
+            gameObject.SetActive(false);
+            gameObject.SetActive(true);
+            yield return null;
+            gameObject.SetActive(false);
+            gameObject.SetActive(true);
         }
 
         public static Vector3 ScreenToWorldPosition2D(Vector3 screenPosition)
