@@ -272,7 +272,7 @@ namespace Aero
 
                     float splitPosition = 0;
                     if (!evenDividePartitions)
-                        splitPosition = Aero.Random.rng.Range(node.m_rect.left + minWidth, node.m_rect.right - minWidth);
+                        splitPosition = UnityEngine.Random.Range(node.m_rect.left + minWidth, node.m_rect.right - minWidth);
                     else
                         splitPosition = node.m_rect.left + (partitionWidth / 2f);
 
@@ -301,7 +301,7 @@ namespace Aero
 
                     float splitPosition = 0;
                     if (!evenDividePartitions)
-                        splitPosition = Aero.Random.rng.Range(node.m_rect.bottom + minHeight, node.m_rect.top - minHeight);
+                        splitPosition = UnityEngine.Random.Range(node.m_rect.bottom + minHeight, node.m_rect.top - minHeight);
                     else
                         splitPosition = node.m_rect.bottom + (partitionHeight / 2f);
 

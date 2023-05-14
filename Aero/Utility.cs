@@ -9,6 +9,7 @@ using Encoding = System.Text.Encoding;
 
 using GameObject = UnityEngine.GameObject;
 using Coroutine = UnityEngine.Coroutine;
+using System.Linq;
 
 namespace Aero
 {
@@ -20,7 +21,7 @@ namespace Aero
         private const int kUILayer = 5;
 
         // Set this to any component instance
-        private static MonoBehaviour s_monoBehaviour = UIManager.instance; 
+        private static MonoBehaviour s_monoBehaviour = ; 
         private static Dictionary<GameObject, Coroutine> s_panelRoutines = new Dictionary<GameObject, Coroutine>();
 
         public enum TimeScale
@@ -77,16 +78,6 @@ namespace Aero
             return worldPosition;
         }
 
-        public static void DestroyAndClear(List<GameObject> list)
-        {
-            int count = list.Count;
-            for (int i = 0; i < count; ++i)
-            {
-                UnityEngine.GameObject.Destroy(list[i]);
-            }
-            list.Clear();
-        }
-
         public static void SaveToFile(string filename, string data)
         {
             FileStream file = File.Open(filename, FileMode.Create);
@@ -121,6 +112,37 @@ namespace Aero
         public static string Plural(string singular, string plural, int count)
         {
             return count == 1 ? singular : plural;
+        }
+
+        // Cast check for determining all colliders within a cone. It begins with OverlapCircle, 
+        //  then filters out colliders ouside the given angle.
+        // https://github.com/walterellisfun/ConeCast/blob/master/ConeCastExtension.cs
+        // I didn't like the above implementation because it resulted in a distorted cone, and I preferred
+        //  a rounded cone. However, I did reference it.
+        //
+        //  range - radius of overlap (results in a nice rounded cone)
+        //  direction - center of cone, outwards
+        //  origin - where the cone begins
+        //  angle - measured from left of cone to right of cone
+        //  Returns: array of applicable colliders
+        public static Collider2D[] ConeCastAll(Vector2 origin, float range, Vector2 direction, float halfAngle, Collider2D[] ignoreList = null)
+        {
+            Collider2D[] hits = Physics2D.OverlapCircleAll(origin, range);
+            List<Collider2D> inCone = new List<Collider2D>();
+            foreach (var hit in hits)
+            {
+                Vector2 point = hit.ClosestPoint(origin);
+                Vector2 directionToHit = point - origin;
+                float angle = Vector2.Angle(direction, directionToHit.normalized);
+                if (angle < halfAngle)
+                {
+                    if (ignoreList != null && ignoreList.Contains(hit))
+                        continue;
+
+                    inCone.Add(hit);
+                }
+            }
+            return inCone.ToArray();
         }
     }
 
@@ -164,84 +186,15 @@ namespace Aero
         }
     }
 
-#pragma warning disable 
-    public struct Transform
-    {
-        public Vector3 position;
-        public Quaternion rotation;
-        public Vector3 scale;
-
-        public static Aero.Transform New = new Aero.Transform();
-
-        public void Assign(UnityEngine.Transform other)
-        {
-            position = other.position;
-            rotation = other.rotation;
-            scale = other.localScale;
-        }
-        public static bool operator ==(Transform left, Transform right)
-        {
-            return left.position == right.position && left.rotation == right.rotation && left.scale == right.scale;
-        }
-        public static bool operator !=(Transform left, Transform right)
-        {
-            return !(left == right);
-        }
-        public static bool operator ==(UnityEngine.Transform left, Transform right)
-        {
-            return left.position == right.position && left.rotation == right.rotation && left.localScale == right.scale;
-        }
-        public static bool operator !=(UnityEngine.Transform left, Transform right)
-        {
-            return !(left == right);
-        }
-        public static bool operator ==(Transform left, UnityEngine.Transform right)
-        {
-            return right == left;
-        }
-        public static bool operator !=(Transform left, UnityEngine.Transform right)
-        {
-            return !(right == left);
-        }
-    }
-#pragma warning restore
-
-    public struct Button
+    public struct ButtonData
     {
         public string name;
         public UnityAction callback;
 
-        public Button(string name, UnityAction callback)
+        public ButtonData(string name, UnityAction callback)
         {
             this.name = name;
             this.callback = callback;
-        }
-    }
-}
-
-namespace UnityEngine
-{
-    public static class Extensions
-    {
-        public static void Assign(this Transform left, Aero.Transform right)
-        {
-            left.position = right.position;
-            left.rotation = right.rotation;
-            left.localScale = right.scale;
-        }
-
-        public static void Assign(this Transform left, Transform right)
-        {
-            left.position = right.position;
-            left.rotation = right.rotation;
-            left.localScale = right.localScale;
-        }
-
-        public static void Zero(this Transform transform)
-        {
-            transform.position = Vector3.zero;
-            transform.rotation = Quaternion.identity;
-            transform.localScale = Vector3.zero;
         }
     }
 }
