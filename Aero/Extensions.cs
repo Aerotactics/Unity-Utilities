@@ -1,3 +1,4 @@
+using Aero;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,13 @@ namespace UnityEngine
             left.position = right.position;
             left.rotation = right.rotation;
             left.localScale = right.localScale;
+        }
+
+        public static void Assign(this Transform left, Aero.TransformData right)
+        {
+            left.position = right.position;
+            left.rotation = right.rotation;
+            left.localScale = right.scale;
         }
 
         public static void Zero(this Transform transform)

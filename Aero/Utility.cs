@@ -21,7 +21,7 @@ namespace Aero
         private const int kUILayer = 5;
 
         // Set this to any component instance
-        private static MonoBehaviour s_monoBehaviour = ; 
+        private static MonoBehaviour s_monoBehaviour = GameManager.instance; 
         private static Dictionary<GameObject, Coroutine> s_panelRoutines = new Dictionary<GameObject, Coroutine>();
 
         public enum TimeScale
@@ -195,6 +195,62 @@ namespace Aero
         {
             this.name = name;
             this.callback = callback;
+        }
+    }
+
+    public struct TransformData
+    {
+        public Vector3 position;
+        public Quaternion rotation;
+        public Vector3 scale;
+
+        public void Zero()
+        {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+            scale = Vector3.one;
+        }
+
+        public void Assign(UnityEngine.Transform transform)
+        {
+            position = transform.position;
+            rotation = transform.rotation;
+            scale = transform.localScale;
+        }
+
+        public static bool operator ==(TransformData left, TransformData right)
+        {
+            return left.position == right.position && left.rotation == right.rotation && left.scale == right.scale;
+        }
+
+        public static bool operator !=(TransformData left, TransformData right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator ==(UnityEngine.Transform left, TransformData right)
+        {
+            return left.position == right.position && left.rotation == right.rotation && left.localScale == right.scale;
+        }
+
+        public static bool operator !=(UnityEngine.Transform left, TransformData right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator ==(TransformData left, UnityEngine.Transform right)
+        {
+            return right == left;
+        }
+
+        public static bool operator !=(TransformData left, UnityEngine.Transform right)
+        {
+            return !(right == left);
+        }
+
+        public override string ToString()
+        {
+            return $"({position}), ({rotation}), ({scale})";
         }
     }
 }
